@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmugMug User Highlight — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080c10;
+      --panel: #0d1117;
+      --surface: #111820;
+      --surface2: #161e28;
+      --border: #1e2d3d;
+      --border2: #253545;
+      --cyan: #00d4ff;
+      --cyan-dim: #007a94;
+      --green: #00ff88;
+      --green-dim: #007740;
+      --orange: #ff8c42;
+      --red: #ff4560;
+      --text: #c9d8e8;
+      --muted: #4a6070;
+      --bright: #e8f4ff;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ─────────────── LOGIN SCREEN ─────────────── */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      z-index: 100;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+
+    #login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Corner accents */
+    .login-box::before, .login-box::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+    }
+    .login-box::before {
+      top: -1px; left: -1px;
+      border-top: 2px solid var(--cyan);
+      border-left: 2px solid var(--cyan);
+    }
+    .login-box::after {
+      bottom: -1px; right: -1px;
+      border-bottom: 2px solid var(--cyan);
+      border-right: 2px solid var(--cyan);
+    }
+
+    .login-badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      animation: blink 1.2s step-end infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .login-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--bright);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .field-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field-input:focus { border-color: var(--cyan); }
+    .field-input::placeholder { color: var(--muted); }
+
+    #login-btn {
+      width: 100%;
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      padding: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    #login-btn:hover {
+      background: var(--bright);
+      box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    #login-error {
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      color: var(--red);
+      text-align: center;
+      min-height: 1rem;
+    }
+
+    /* ─────────────── ADMIN PANEL ─────────────── */
+    #admin-panel {
+      display: none;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    #admin-panel.visible { display: flex; }
+
+    /* Top bar */
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--bright);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .topbar-brand .pipe {
+      color: var(--cyan);
+      font-weight: 300;
+    }
+
+    .topbar-brand .admin-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+      background: rgba(0,212,255,0.08);
+      border: 1px solid var(--cyan-dim);
+      padding: 0.15rem 0.5rem;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      color: var(--green);
+      letter-spacing: 0.1em;
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    #logout-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      padding: 0.35rem 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    #logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* Content area */
+    .content {
+      flex: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 2.5rem 2rem;
+    }
+
+    /* API Key row */
+    #api-setup-admin {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 1rem 1.4rem;
+      margin-bottom: 2rem;
+    }
+
+    #api-setup-admin label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    #admin-api-key {
+      flex: 1;
+      min-width: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      padding: 0.5rem 0.8rem;
+      outline: none;
+    }
+
+    #admin-api-key:focus { border-color: var(--cyan); }
+    #admin-api-key::placeholder { color: var(--muted); }
+
+    #save-admin-key {
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      padding: 0.5rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+    }
+
+    .admin-key-saved { font-size: 0.7rem; color: var(--green); }
+
+    /* Search controls */
+    .search-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0;
+      margin-bottom: 1.2rem;
+    }
+
+    #admin-search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-right: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      padding: 0.85rem 1.2rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #admin-search-input:focus { border-color: var(--cyan); }
+    #admin-search-input::placeholder { color: var(--muted); }
+
+    #admin-search-btn {
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      padding: 0.85rem 1.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #admin-search-btn:hover { background: var(--bright); }
+    #admin-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Type tabs */
+    .type-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--border);
+      padding: 0.75rem 0.5rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { background: var(--surface); color: var(--text); }
+
+    .tab-btn.active {
+      background: rgba(0,212,255,0.06);
+      color: var(--cyan);
+      border-bottom: 2px solid var(--cyan);
+    }
+
+    .tab-icon { display: block; font-size: 1.1rem; margin-bottom: 3px; }
+
+    /* Status bar */
+    #admin-status {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      min-height: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    #admin-status .highlight { color: var(--cyan); }
+
+    /* Image grid */
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .image-card {
+      background: var(--surface);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      transition: transform 0.2s;
+    }
+
+    .image-card:hover { z-index: 1; transform: scale(1.02); }
+
+    .image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: filter 0.3s;
+    }
+
+    .image-card:hover img { filter: brightness(1.08); }
+
+    .image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,12,16,0.85) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: flex-end;
+      padding: 0.75rem;
+    }
+
+    .image-card:hover .image-overlay { opacity: 1; }
+
+    .image-overlay-text {
+      font-size: 0.68rem;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* List results */
+    .list-results { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+
+    .list-card {
+      background: var(--surface);
+      padding: 1.1rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      transition: background 0.15s;
+    }
+
+    .list-card:hover { background: var(--surface2); }
+
+    .list-type-badge {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge-album { background: rgba(0,255,136,0.08); color: var(--green); border: 1px solid var(--green-dim); }
+    .badge-folder { background: rgba(255,140,66,0.08); color: var(--orange); border: 1px solid #7a4020; }
+
+    .list-info { flex: 1; min-width: 0; }
+
+    .list-name {
+      font-size: 0.9rem;
+      color: var(--bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    .list-detail {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    .list-meta {
+      font-size: 0.62rem;
+      color: var(--cyan-dim);
+      margin-top: 2px;
+    }
+
+    .open-link {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      padding: 0.35rem 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .open-link:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.2rem;
+      background: var(--panel);
+    }
+
+    .page-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 0.4rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .page-btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+    .page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+    .page-info { font-size: 0.65rem; color: var(--muted); }
+
+    /* Error */
+    .error-msg {
+      border: 1px solid var(--red);
+      background: rgba(255,69,96,0.06);
+      padding: 1rem 1.2rem;
+      font-size: 0.75rem;
+      color: var(--red);
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border: 2px solid var(--border);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Empty */
+    .empty {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--border);
+    }
+
+    /* Public link */
+    .public-link-bar {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    .public-link-bar a { color: var(--cyan-dim); text-decoration: none; }
+    .public-link-bar a:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+<!-- ─── LOGIN SCREEN ─── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-badge">
+      <div class="badge-dot"></div>
+      Secure Admin Access
+    </div>
+    <h1 class="login-title">User Highlight<br>Admin Panel</h1>
+    <p class="login-sub">Enter credentials to continue</p>
+
+    <div class="field-group">
+      <label class="field-label" for="pw-input">Password</label>
+      <input class="field-input" id="pw-input" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:0.6rem;font-size:0.68rem;color:var(--muted);cursor:pointer;margin-bottom:0.2rem;">
+      <input type="checkbox" id="remember-me" style="accent-color:var(--cyan);" checked/>
+      Remember me on this device
+    </label>
+
+    <button id="login-btn">Authenticate →</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ─── ADMIN PANEL ─── -->
+<div id="admin-panel">
+  <nav class="topbar">
+    <div class="topbar-brand">
+      SmugMug User Highlight <span class="pipe">/</span> Admin
+      <span class="admin-tag">RESTRICTED</span>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot">Connected</span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="content">
+<!-- Search -->
+    <div class="search-controls">
+      <input id="admin-search-input" type="text" placeholder="Search images, albums, folders…"/>
+      <button id="admin-search-btn">Execute</button>
+    </div>
+
+    <!-- Tabs: Images, Albums, Folders -->
+    <div class="type-tabs">
+      <button class="tab-btn active" data-type="image">
+        <span class="tab-icon">🖼</span>Images
+      </button>
+      <button class="tab-btn" data-type="album">
+        <span class="tab-icon">📸</span>Albums
+      </button>
+      <button class="tab-btn" data-type="folder">
+        <span class="tab-icon">📁</span>Folders
+      </button>
+    </div>
+
+    <div id="admin-status"></div>
+    <div id="admin-results"></div>
+    <div id="admin-pagination"></div>
+
+    <div class="public-link-bar">
+      ← <a href="index.html">Back to SmugMug User Highlight</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Constants ──────────────────────────────────
+  const ADMIN_PASS = 'smug1234';
+  const SESSION_KEY = 'smugmug_admin_auth';
+  // ▶ Paste your Cloudflare Worker URL here after deploying worker.js:
+  const PROXY_BASE = 'YOUR_WORKER_URL_HERE';
+  const PER_PAGE = 20;
+
+  let currentType = 'image';
+  let currentQuery = '';
+  let currentStart = 1;
+
+  // ── Auth ───────────────────────────────────────
+  function isLoggedIn() {
+    return localStorage.getItem(SESSION_KEY) === 'true' || sessionStorage.getItem(SESSION_KEY) === 'true';
+  }
+
+  function showPanel() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('admin-panel').classList.add('visible');
+  }
+
+  function showLogin() {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('admin-panel').classList.remove('visible');
+  }
+
+  // Check existing session on load
+  if (isLoggedIn()) {
+    showPanel();
+  }
+
+  // Login form
+  const pwInput = document.getElementById('pw-input');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+
+  function attemptLogin() {
+    const pw = pwInput.value;
+    if (pw === ADMIN_PASS) {
+      const remember = document.getElementById('remember-me').checked;
+      if (remember) {
+        localStorage.setItem(SESSION_KEY, 'true');
+      } else {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+      }
+      loginError.textContent = '';
+      showPanel();
+    } else {
+      loginError.textContent = '⚠ Invalid password. Try again.';
+      pwInput.value = '';
+      pwInput.focus();
+      // Shake animation
+      loginError.style.animation = 'none';
+      loginError.offsetHeight;
+      loginError.style.animation = '';
+    }
+  }
+
+  loginBtn.addEventListener('click', attemptLogin);
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); });
+
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    showLogin();
+    pwInput.value = '';
+  });
+
+  // ── API Key (admin) ────────────────────────────
+  const adminKeyInput = document.getElementById('admin-api-key');
+  const adminKeyStatus = document.getElementById('admin-key-status');
+
+  if (apiKey) { adminKeyInput.value = apiKey; showAdminKeySaved(); }
+
+  document.getElementById('save-admin-key').addEventListener('click', () => {
+    apiKey = adminKeyInput.value.trim();
+    if (!apiKey) return;
+    localStorage.setItem('smugmug_api_key', apiKey);
+    showAdminKeySaved();
+  });
+
+  function showAdminKeySaved() {
+    adminKeyStatus.className = 'admin-key-saved';
+    adminKeyStatus.textContent = '✓ saved';
+  }
+
+  // ── Tabs ───────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentType = btn.dataset.type;
+      if (currentQuery) { currentStart = 1; doAdminSearch(); }
+    });
+  });
+
+  // ── Search ─────────────────────────────────────
+  document.getElementById('admin-search-btn').addEventListener('click', startAdminSearch);
+  document.getElementById('admin-search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startAdminSearch();
+  });
+
+  function startAdminSearch() {
+    currentQuery = document.getElementById('admin-search-input').value.trim();
+    if (!currentQuery) return;
+    currentStart = 1;
+    doAdminSearch();
+  }
+
+  async function doAdminSearch() {
+    if (!PROXY_BASE || PROXY_BASE === 'YOUR_WORKER_URL_HERE') {
+      showAdminError('Worker URL not configured. Set PROXY_BASE in the source.');
+      return;
+    }
+
+    const status = document.getElementById('admin-status');
+    const results = document.getElementById('admin-results');
+    const pagination = document.getElementById('admin-pagination');
+
+    status.innerHTML = '<span class="spinner"></span><span class="highlight">Querying SmugMug API…</span>';
+    results.innerHTML = '';
+    pagination.innerHTML = '';
+    document.getElementById('admin-search-btn').disabled = true;
+
+    const endpoints = {
+      image:  '/api/v2/image!search',
+      album:  '/api/v2/album!search',
+      folder: '/api/v2/folder!search',
+    };
+
+    const params = new URLSearchParams({
+      q: currentQuery,
+      count: PER_PAGE,
+      start: currentStart,
+    });
+
+    try {
+      params.set('endpoint', endpoints[currentType]);
+      const resp = await fetch(`${PROXY_BASE}?${params}`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const response = data.Response;
+      const pages = response.Pages || {};
+      const total = pages.Total || 0;
+
+      status.innerHTML = `<span class="highlight">${total.toLocaleString()}</span> ${currentType}${total !== 1 ? 's' : ''} · query: <span class="highlight">"${escHtml(currentQuery)}"</span> · page ${Math.ceil(currentStart/PER_PAGE)} of ${Math.max(1, Math.ceil(total/PER_PAGE))}`;
+
+      if (total === 0) {
+        results.innerHTML = '<div class="empty">// no results found</div>';
+      } else {
+        renderAdminResults(response, currentType);
+        renderAdminPagination(pages);
+      }
+    } catch (err) {
+      showAdminError(`API error: ${err.message}`);
+      status.textContent = '';
+    }
+    document.getElementById('admin-search-btn').disabled = false;
+  }
+
+  function renderAdminResults(response, type) {
+    const container = document.getElementById('admin-results');
+
+    if (type === 'image') {
+      const images = response.Image || [];
+      const grid = document.createElement('div');
+      grid.className = 'image-grid';
+      images.forEach(img => {
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        const thumb = img.ThumbnailUrl || '';
+        const title = img.FileName || img.Title || 'Untitled';
+        card.innerHTML = `
+          <img src="${escHtml(thumb)}" alt="${escHtml(title)}" loading="lazy"/>
+          <div class="image-overlay">
+            <div class="image-overlay-text">${escHtml(title)}</div>
+          </div>
+        `;
+        if (img.WebUri) card.addEventListener('click', () => window.open(img.WebUri, '_blank'));
+        grid.appendChild(card);
+      });
+      container.appendChild(grid);
+      return;
+    }
+
+    const items = response.Album || response.Folder || [];
+    const list = document.createElement('div');
+    list.className = 'list-results';
+
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'list-card';
+
+      let name = '', detail = '', meta = '', uri = '';
+
+      if (type === 'album') {
+        name = item.Name || 'Untitled Album';
+        detail = item.Description ? item.Description.replace(/<[^>]+>/g,'').substring(0,100) : '';
+        meta = [
+          item.ImageCount ? `${item.ImageCount} images` : null,
+          item.LastUpdated ? `Updated ${new Date(item.LastUpdated).toLocaleDateString()}` : null,
+        ].filter(Boolean).join(' · ');
+        uri = item.WebUri || '';
+      } else if (type === 'folder') {
+        name = item.Name || 'Untitled Folder';
+        detail = item.Description ? item.Description.replace(/<[^>]+>/g,'').substring(0,100) : '';
+        meta = item.UrlPath || '';
+        uri = item.WebUri || '';
+      }
+
+      card.innerHTML = `
+        <span class="list-type-badge badge-${type}">${type}</span>
+        <div class="list-info">
+          <div class="list-name">${escHtml(name)}</div>
+          ${detail ? `<div class="list-detail">${escHtml(detail)}</div>` : ''}
+          ${meta ? `<div class="list-meta">${escHtml(meta)}</div>` : ''}
+        </div>
+        ${uri ? `<a class="open-link" href="${escHtml(uri)}" target="_blank" rel="noopener">Open ↗</a>` : ''}
+      `;
+      list.appendChild(card);
+    });
+
+    container.appendChild(list);
+  }
+
+  function renderAdminPagination(pages) {
+    const container = document.getElementById('admin-pagination');
+    const total = pages.Total || 0;
+    const totalPages = Math.ceil(total / PER_PAGE);
+    const currentPage = Math.ceil(currentStart / PER_PAGE);
+    if (totalPages <= 1) return;
+
+    container.innerHTML = `
+      <div class="pagination">
+        <button class="page-btn" id="prev-btn" ${currentPage <= 1 ? 'disabled' : ''}>← Prev</button>
+        <span class="page-info">Page ${currentPage} / ${totalPages} · ${total.toLocaleString()} total results</span>
+        <button class="page-btn" id="next-btn" ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>
+      </div>`;
+
+    document.getElementById('prev-btn')?.addEventListener('click', () => {
+      currentStart = Math.max(1, currentStart - PER_PAGE); doAdminSearch(); scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.getElementById('next-btn')?.addEventListener('click', () => {
+      currentStart += PER_PAGE; doAdminSearch(); scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  function showAdminError(msg) {
+    document.getElementById('admin-results').innerHTML = `<div class="error-msg">⚠ ${escHtml(msg)}</div>`;
+  }
+
+  function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

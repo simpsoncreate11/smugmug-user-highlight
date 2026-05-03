@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmugMug User Highlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f5f0e8;
+      --warm-white: #faf8f4;
+      --ink: #1a1612;
+      --brown: #5c4a36;
+      --gold: #b8955a;
+      --gold-light: #d4ae78;
+      --muted: #8c7d6e;
+      --border: #ddd5c8;
+      --surface: #ffffff;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(184,149,90,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(92,74,54,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--warm-white);
+    }
+
+    .eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5.5vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    h1 em { font-style: italic; color: var(--brown); }
+
+    .tagline {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    .ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 2.5rem;
+    }
+    .ornament::before { content: ''; height: 1px; width: 60px; background: linear-gradient(to right, transparent, var(--gold)); }
+    .ornament::after  { content: ''; height: 1px; width: 60px; background: linear-gradient(to left,  transparent, var(--gold)); }
+    .ornament span { color: var(--gold); font-size: 0.7rem; }
+
+    /* ── Section nav ── */
+    .section-nav {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      padding: 1rem 2.5rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .nav-tab:hover { color: var(--brown); }
+    .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    /* ── Search Section ── */
+    #section-search-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    #api-setup {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    #api-setup label {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    #api-key-input {
+      flex: 1;
+      min-width: 180px;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.85rem;
+      color: var(--ink);
+      padding: 0.2rem 0;
+      outline: none;
+    }
+
+    #api-key-input::placeholder { color: var(--muted); font-style: italic; }
+    #api-key-input:focus { border-bottom-color: var(--gold); }
+
+    #save-key-btn {
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 1rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: 1px;
+      transition: background 0.2s;
+    }
+
+    #save-key-btn:hover { background: var(--brown); }
+    .key-saved { font-size: 0.75rem; color: #6a9a6a; font-style: italic; }
+
+    .search-wrap { position: relative; }
+
+    #search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1.1rem 5rem 1.1rem 1.4rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 1.05rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    #search-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 2px 12px rgba(184,149,90,0.12);
+    }
+
+    #search-input::placeholder { color: var(--muted); font-style: italic; }
+
+    #search-btn {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      padding: 0 1.4rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      border-radius: 0 2px 2px 0;
+      transition: background 0.2s;
+    }
+
+    #search-btn:hover { background: var(--brown); }
+    #search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #status {
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      font-style: italic;
+      min-height: 1.2rem;
+    }
+
+    #results { margin-top: 1rem; }
+
+    .user-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .user-card:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 4px 16px rgba(184,149,90,0.1);
+      transform: translateY(-1px);
+    }
+
+    .user-avatar {
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+
+    .user-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-nick { font-size: 0.78rem; color: var(--muted); margin-top: 2px; font-style: italic; }
+
+    .user-bio {
+      font-size: 0.82rem;
+      color: var(--brown);
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .visit-btn {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.45rem 1rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-decoration: none;
+      border-radius: 1px;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .visit-btn:hover { background: var(--gold); color: #fff; }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .page-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--brown);
+      padding: 0.5rem 1.2rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: 1px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .page-btn:hover:not(:disabled) { border-color: var(--gold); background: rgba(184,149,90,0.05); }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .page-info { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+
+    .error-msg {
+      background: #fff5f5;
+      border: 1px solid #e8c0c0;
+      border-radius: 2px;
+      padding: 1rem 1.2rem;
+      font-size: 0.82rem;
+      color: #a05050;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    /* ── Highlights Section ── */
+    #section-highlights-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .highlights-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .highlights-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    .highlights-title em { font-style: italic; color: var(--gold); }
+
+    .highlights-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .refresh-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.3rem 0.9rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: 1px;
+      transition: border-color 0.2s, color 0.2s;
+      margin-left: 0.5rem;
+    }
+
+    .refresh-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .refresh-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Loading */
+    #highlights-status {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+
+    .hl-spinner {
+      display: block;
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 1.2rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hl-loading-text {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      width: 240px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 1rem auto 0;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Grid */
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1.2rem;
+    }
+
+    /* Highlight cards */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hl-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 1.3rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.35s ease both;
+    }
+
+    .hl-card:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 6px 24px rgba(184,149,90,0.14);
+      transform: translateY(-3px);
+    }
+
+    /* Gold top bar for top 3 */
+    .hl-card.gold-tier::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-light));
+    }
+
+    /* Silver for 4-10 */
+    .hl-card.silver-tier::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #c8c0b4, #a8a09a, #c8c0b4);
+    }
+
+    .hl-rank {
+      position: absolute;
+      top: 0.55rem;
+      left: 0.65rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .hl-card.gold-tier   .hl-rank { color: var(--gold); font-weight: 700; font-style: normal; }
+    .hl-card.silver-tier .hl-rank { color: #7a746e; }
+
+    .hl-avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--cream);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .hl-card.gold-tier .hl-avatar {
+      width: 68px; height: 68px;
+      border-color: var(--gold-light);
+      box-shadow: 0 0 0 3px rgba(184,149,90,0.15);
+    }
+
+    .hl-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 0.2rem;
+    }
+
+    .hl-nick {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 0.5rem;
+    }
+
+    .hl-bio {
+      font-size: 0.72rem;
+      color: var(--brown);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+      flex: 1;
+      min-height: 2rem;
+    }
+
+    .hl-visit {
+      display: inline-block;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.3rem 0.85rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      border-radius: 1px;
+      transition: border-color 0.2s, color 0.2s;
+      margin-top: auto;
+    }
+
+    .hl-visit:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* No key state */
+    .hl-needs-key {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    .hl-needs-key p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+
+    .go-search-btn {
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.4rem;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      border-radius: 1px;
+      transition: background 0.2s;
+    }
+
+    .go-search-btn:hover { background: var(--brown); }
+
+    /* spinner (inline) */
+    .spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: auto;
+    }
+
+    footer a { color: var(--gold); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">SmugMug User Highlight</p>
+  <h1>Discover <em>Photographers</em></h1>
+  <p class="tagline">Search SmugMug users or explore the Top 100 most popular photographers</p>
+  <div class="ornament"><span>✦</span></div>
+</header>
+
+<nav class="section-nav">
+  <button class="nav-tab active" data-section="search">🔍 Search Users</button>
+  <button class="nav-tab" data-section="highlights">✦ Top 100 Highlights</button>
+</nav>
+
+<!-- ══════════════════════════════════════
+     SEARCH SECTION
+══════════════════════════════════════ -->
+<div id="section-search" class="section visible">
+  <div id="section-search-inner">
+
+<div class="search-wrap">
+      <input id="search-input" type="text" placeholder="Search by name, username, or keyword…"/>
+      <button id="search-btn">Search</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="results"></div>
+    <div id="pagination"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     HIGHLIGHTS SECTION
+══════════════════════════════════════ -->
+<div id="section-highlights" class="section">
+  <div id="section-highlights-inner">
+
+    <div class="highlights-header">
+      <h2 class="highlights-title">Top 100 <em>Highlighted</em> Users</h2>
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+        <span class="highlights-meta" id="hl-meta">Curated by popularity</span>
+        <button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div id="highlights-status"></div>
+    <div id="highlights-grid" class="highlights-grid"></div>
+
+  </div>
+</div>
+
+<footer>
+  <a href="admin.html">Admin Panel</a> &nbsp;·&nbsp; SmugMug User Highlight &nbsp;·&nbsp;
+  Powered by <a href="https://api.smugmug.com/api/v2/doc" target="_blank">SmugMug API v2</a>
+</footer>
+
+<script>
+// ────────────────────────────────────────────
+//  Constants & state
+// ────────────────────────────────────────────
+// ▶ Paste your Cloudflare Worker URL here after deploying worker.js:
+const PROXY_BASE = 'YOUR_WORKER_URL_HERE';
+const PER_PAGE = 15;
+
+// We fire these queries in parallel to collect a wide pool of users,
+// then rank and deduplicate to surface the top 100 most popular.
+const HL_QUERIES = [
+  'photography','landscape','portrait','wildlife','travel',
+  'nature','wedding','street','sports','aerial',
+  'underwater','architecture','macro','black white','fashion',
+  'newborn','event','commercial','documentary','fine art'
+];
+
+let searchQuery  = '';
+let searchStart  = 1;
+let hlLoaded     = false;
+
+// ────────────────────────────────────────────
+//  Tab navigation
+// ────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const id = tab.dataset.section;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+    document.getElementById(`section-${id}`).classList.add('visible');
+    if (id === 'highlights' && !hlLoaded) loadHighlights();
+  });
+});
+
+// ────────────────────────────────────────────
+//  User Search
+// ────────────────────────────────────────────
+document.getElementById('search-btn').addEventListener('click', startSearch);
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startSearch();
+});
+
+function startSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+  searchQuery = q;
+  searchStart = 1;
+  runSearch();
+}
+
+async function runSearch() {
+  if (!PROXY_BASE || PROXY_BASE === 'YOUR_WORKER_URL_HERE') {
+    setSearchError('Worker URL not configured. See PROXY_BASE in the source.');
+    return;
+  }
+
+  const statusEl = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+  const paginEl  = document.getElementById('pagination');
+  const btn      = document.getElementById('search-btn');
+
+  statusEl.innerHTML = '<span class="spinner"></span>Searching…';
+  resultsEl.innerHTML = '';
+  paginEl.innerHTML  = '';
+  btn.disabled = true;
+
+  try {
+    const params = new URLSearchParams({
+      endpoint: '/api/v2/user!search',
+      q: searchQuery, count: PER_PAGE, start: searchStart
+    });
+    const resp = await fetch(`${PROXY_BASE}?${params}`, {
+      headers: { Accept: 'application/json' }
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data     = await resp.json();
+    const response = data.Response;
+    const pages    = response.Pages || {};
+    const total    = pages.Total || 0;
+
+    statusEl.textContent = total
+      ? `${total.toLocaleString()} photographer${total !== 1 ? 's' : ''} found for "${searchQuery}"`
+      : '';
+
+    if (total === 0) {
+      resultsEl.innerHTML = '<div class="empty">No photographers found. Try a different search term.</div>';
+    } else {
+      buildUserCards(response.User || [], resultsEl);
+      buildPagination(pages, paginEl);
+    }
+  } catch (err) {
+    setSearchError(`Search failed: ${err.message}`);
+    statusEl.textContent = '';
+  }
+  btn.disabled = false;
+}
+
+function buildUserCards(users, container) {
+  users.forEach(user => {
+    const name = user.DisplayName || user.NickName || 'Unknown';
+    const nick = user.NickName ? `@${user.NickName}` : '';
+    const bio  = user.Bio ? user.Bio.replace(/<[^>]+>/g,'').substring(0,80) : '';
+    const uri  = user.WebUri || (user.NickName ? `https://www.smugmug.com/${user.NickName}` : '#');
+
+    const card = document.createElement('div');
+    card.className = 'user-card';
+    card.innerHTML = `
+      <div class="user-avatar">👤</div>
+      <div class="user-info">
+        <div class="user-name">${esc(name)}</div>
+        ${nick ? `<div class="user-nick">${esc(nick)}</div>` : ''}
+        ${bio  ? `<div class="user-bio">${esc(bio)}</div>`  : ''}
+      </div>
+      ${uri !== '#' ? `<a class="visit-btn" href="${esc(uri)}" target="_blank" rel="noopener">View Gallery</a>` : ''}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function buildPagination(pages, container) {
+  const total      = pages.Total || 0;
+  const totalPages = Math.ceil(total / PER_PAGE);
+  const curPage    = Math.ceil(searchStart / PER_PAGE);
+  if (totalPages <= 1) return;
+
+  container.innerHTML = `
+    <div class="pagination">
+      <button class="page-btn" id="prev-btn" ${curPage <= 1 ? 'disabled' : ''}>← Previous</button>
+      <span class="page-info">Page ${curPage} of ${totalPages}</span>
+      <button class="page-btn" id="next-btn" ${curPage >= totalPages ? 'disabled' : ''}>Next →</button>
+    </div>`;
+
+  document.getElementById('prev-btn')?.addEventListener('click', () => {
+    searchStart = Math.max(1, searchStart - PER_PAGE); runSearch(); scrollTo({top:0,behavior:'smooth'});
+  });
+  document.getElementById('next-btn')?.addEventListener('click', () => {
+    searchStart += PER_PAGE; runSearch(); scrollTo({top:0,behavior:'smooth'});
+  });
+}
+
+function setSearchError(msg) {
+  document.getElementById('results').innerHTML = `<div class="error-msg">${esc(msg)}</div>`;
+}
+
+// ────────────────────────────────────────────
+//  Highlights — top 100
+// ────────────────────────────────────────────
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  hlLoaded = false;
+  loadHighlights();
+});
+
+async function loadHighlights() {
+  const statusEl  = document.getElementById('highlights-status');
+  const gridEl    = document.getElementById('highlights-grid');
+  const refreshBtn= document.getElementById('refresh-btn');
+  const metaEl    = document.getElementById('hl-meta');
+
+  // Proxy not configured
+  if (!PROXY_BASE || PROXY_BASE === 'YOUR_WORKER_URL_HERE') {
+    statusEl.innerHTML = `<div class="error-msg">Worker URL not configured. Set PROXY_BASE in the source.</div>`;
+    gridEl.innerHTML = '';
+    return;
+  }
+
+  hlLoaded = true;
+  refreshBtn.disabled = true;
+  gridEl.innerHTML    = '';
+  metaEl.textContent  = 'Curated by popularity';
+
+  // Loading UI with progress bar
+  statusEl.innerHTML = `
+    <div class="hl-spinner"></div>
+    <p class="hl-loading-text">
+      Gathering top photographers across SmugMug…<br>
+      <small>Running ${HL_QUERIES.length} queries to collect the best profiles</small>
+    </p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="hl-progress"></div>
+    </div>`;
+
+  const progressEl = document.getElementById('hl-progress');
+
+  try {
+    // Fetch all queries, updating progress as each resolves
+    let completed = 0;
+    const fetchOne = async (q) => {
+      const r = await fetchUsersForQuery(q, 15);
+      completed++;
+      if (progressEl) progressEl.style.width = `${Math.round((completed / HL_QUERIES.length) * 100)}%`;
+      return r;
+    };
+
+    const allResults = await Promise.allSettled(HL_QUERIES.map(q => fetchOne(q)));
+
+    // Deduplicate by NickName; score by ViewCount > AlbumCount > name-length heuristic
+    const userMap = new Map();
+    allResults.forEach(r => {
+      if (r.status === 'fulfilled') {
+        r.value.forEach((user, positionInResults) => {
+          const key = (user.NickName || '').toLowerCase().trim();
+          if (!key) return;
+          if (!userMap.has(key)) {
+            // Attach a popularity score
+            user._score = scoreUser(user);
+            userMap.set(key, user);
+          }
+        });
+      }
+    });
+
+    // Sort and take top 100
+    const ranked = [...userMap.values()]
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 100);
+
+    if (ranked.length === 0) {
+      statusEl.innerHTML = '<div class="empty">No results returned. Please check your API key.</div>';
+      refreshBtn.disabled = false;
+      return;
+    }
+
+    statusEl.innerHTML = '';
+    metaEl.textContent = `${ranked.length} photographers · ranked by popularity`;
+
+    ranked.forEach((user, idx) => {
+      const rank = idx + 1;
+      const name = user.DisplayName || user.NickName || 'Unknown';
+      const nick = user.NickName ? `@${user.NickName}` : '';
+      const bio  = user.Bio ? user.Bio.replace(/<[^>]+>/g,'').substring(0,90) : '';
+      const uri  = user.WebUri || (user.NickName ? `https://www.smugmug.com/${user.NickName}` : '#');
+
+      const tierClass = rank <= 3   ? 'gold-tier'
+                      : rank <= 10  ? 'silver-tier'
+                      : '';
+
+      const card = document.createElement('div');
+      card.className = `hl-card ${tierClass}`;
+      card.style.animationDelay = `${Math.min(idx * 18, 700)}ms`;
+
+      card.innerHTML = `
+        <span class="hl-rank">#${rank}</span>
+        <div class="hl-avatar">👤</div>
+        <div class="hl-name">${esc(name)}</div>
+        ${nick ? `<div class="hl-nick">${esc(nick)}</div>` : ''}
+        <div class="hl-bio">${bio ? esc(bio) : ''}</div>
+        ${uri !== '#' ? `<a class="hl-visit" href="${esc(uri)}" target="_blank" rel="noopener">View Gallery</a>` : ''}
+      `;
+      gridEl.appendChild(card);
+    });
+
+  } catch (err) {
+    statusEl.innerHTML = `<div class="error-msg">Failed to load highlights: ${esc(err.message)}</div>`;
+  }
+
+  refreshBtn.disabled = false;
+}
+
+function scoreUser(user) {
+  // ViewCount is the strongest signal; fall back to image/album counts
+  const views  = Number(user.ViewCount  || 0);
+  const images = Number(user.ImageCount || 0);
+  const albums = Number(user.AlbumCount || 0);
+  // Weight: views count most, then images, then albums
+  return views * 1 + images * 10 + albums * 50;
+}
+
+async function fetchUsersForQuery(q, count) {
+  const params = new URLSearchParams({ endpoint: '/api/v2/user!search', q, count });
+  const resp   = await fetch(`${PROXY_BASE}?${params}`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  return data.Response?.User || [];
+}
+
+function switchToSearch() {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-section="search"]').classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('section-search').classList.add('visible');
+}
+
+// ────────────────────────────────────────────
+//  Utility
+// ────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
