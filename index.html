@@ -545,7 +545,7 @@
 // ─────────────────────────────────────────
 //  CONFIG — paste your Cloudflare Worker URL here
 // ─────────────────────────────────────────
-const PROXY_BASE = 'https://late-tooth-dbaa.marylsimpson2001.workers.dev/';
+const PROXY_BASE = 'https://late-tooth-dbaa.marylsimpson2001.workers.dev';
 
 // ─────────────────────────────────────────
 //  AUTH
@@ -650,7 +650,7 @@ function startSearch() {
 }
 
 async function runSearch() {
-  if (!PROXY_BASE || PROXY_BASE === 'https://late-tooth-dbaa.marylsimpson2001.workers.dev/') { setSearchError('Proxy not configured.'); return; }
+  if (!PROXY_BASE || PROXY_BASE === '') { setSearchError('Proxy not configured.'); return; }
   const statusEl  = document.getElementById('status');
   const resultsEl = document.getElementById('results');
   const paginEl   = document.getElementById('pagination');
@@ -735,7 +735,7 @@ async function loadHighlights() {
   const refreshBtn = document.getElementById('refresh-btn');
   const metaEl     = document.getElementById('hl-meta');
 
-  if (!PROXY_BASE || PROXY_BASE === 'https://late-tooth-dbaa.marylsimpson2001.workers.dev/') {
+  if (!PROXY_BASE || PROXY_BASE === '') {
     statusEl.innerHTML = '<div class="error-msg">Proxy not configured.</div>';
     return;
   }
@@ -828,7 +828,7 @@ function startAdminSearch() {
 }
 
 async function runAdminSearch() {
-  if (!PROXY_BASE || PROXY_BASE === 'https://late-tooth-dbaa.marylsimpson2001.workers.dev/') { showAdminError('Proxy not configured.'); return; }
+  if (!PROXY_BASE || PROXY_BASE === '') { showAdminError('Proxy not configured.'); return; }
 
   const statusEl  = document.getElementById('admin-status');
   const resultsEl = document.getElementById('admin-results');
