@@ -650,7 +650,6 @@ function startSearch() {
 }
 
 async function runSearch() {
-  if (!PROXY_BASE || PROXY_BASE === '') { setSearchError('Proxy not configured.'); return; }
   const statusEl  = document.getElementById('status');
   const resultsEl = document.getElementById('results');
   const paginEl   = document.getElementById('pagination');
@@ -735,10 +734,6 @@ async function loadHighlights() {
   const refreshBtn = document.getElementById('refresh-btn');
   const metaEl     = document.getElementById('hl-meta');
 
-  if (!PROXY_BASE || PROXY_BASE === '') {
-    statusEl.innerHTML = '<div class="error-msg">Proxy not configured.</div>';
-    return;
-  }
 
   hlLoaded = true; refreshBtn.disabled = true; gridEl.innerHTML = ''; metaEl.textContent = 'Curated by popularity';
 
@@ -828,7 +823,6 @@ function startAdminSearch() {
 }
 
 async function runAdminSearch() {
-  if (!PROXY_BASE || PROXY_BASE === '') { showAdminError('Proxy not configured.'); return; }
 
   const statusEl  = document.getElementById('admin-status');
   const resultsEl = document.getElementById('admin-results');
