@@ -425,6 +425,125 @@
     .admin-back { text-align: center; padding: 1rem; font-size: 0.65rem; color: #4a6070; border-top: 1px solid #1e2d3d; margin-top: 3rem; }
     .admin-back button { background: none; border: none; color: #007a94; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-decoration: underline; }
     .admin-back button:hover { color: #00d4ff; }
+
+    /* ── Image Explorer ── */
+    #section-images-inner {
+      max-width: 1200px; margin: 0 auto; padding: 3rem 2rem 4rem;
+      position: relative; z-index: 1;
+    }
+
+    .img-explorer-header { margin-bottom: 2rem; }
+
+    .img-explorer-search {
+      display: flex; gap: 0; margin-bottom: 0.75rem;
+    }
+
+    #img-search-input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-right: none; border-radius: 2px 0 0 2px;
+      padding: 1rem 1.2rem; font-family: 'Lato', sans-serif; font-size: 1rem;
+      color: var(--ink); outline: none; transition: border-color 0.2s;
+    }
+
+    #img-search-input:focus { border-color: var(--gold); }
+    #img-search-input::placeholder { color: var(--muted); font-style: italic; }
+
+    #img-search-btn {
+      background: var(--ink); color: var(--cream); border: none;
+      padding: 1rem 1.6rem; font-family: 'Lato', sans-serif; font-size: 0.72rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
+      cursor: pointer; border-radius: 0 2px 2px 0; transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #img-search-btn:hover { background: var(--brown); }
+    #img-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .img-explorer-hint {
+      font-size: 0.75rem; color: var(--muted); font-style: italic;
+    }
+
+    #img-status {
+      margin-bottom: 1.5rem; font-size: 0.78rem; color: var(--muted);
+      font-style: italic; min-height: 1.2rem;
+    }
+
+    .img-explorer-grid {
+      columns: 2; column-gap: 1rem;
+    }
+
+    @media (min-width: 600px)  { .img-explorer-grid { columns: 3; } }
+    @media (min-width: 900px)  { .img-explorer-grid { columns: 4; } }
+    @media (min-width: 1100px) { .img-explorer-grid { columns: 5; } }
+
+    @keyframes imgFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .img-tile {
+      break-inside: avoid;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+      cursor: pointer;
+      background: var(--border);
+      animation: imgFadeIn 0.4s ease both;
+    }
+
+    .img-tile img {
+      width: 100%; display: block;
+      transition: transform 0.35s ease, filter 0.35s ease;
+    }
+
+    .img-tile:hover img {
+      transform: scale(1.04);
+      filter: brightness(0.75);
+    }
+
+    .img-tile-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(26,22,18,0.85) 0%, transparent 55%);
+      opacity: 0; transition: opacity 0.3s;
+      display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 0.75rem;
+    }
+
+    .img-tile:hover .img-tile-overlay { opacity: 1; }
+
+    .img-tile-title {
+      font-size: 0.72rem; color: #fff; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .img-tile-author {
+      font-size: 0.63rem; color: var(--gold-light); font-style: italic;
+    }
+
+    .img-explorer-load-more {
+      display: block; margin: 2rem auto 0;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--brown); padding: 0.7rem 2rem;
+      font-family: 'Lato', sans-serif; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      cursor: pointer; border-radius: 1px; transition: border-color 0.2s, background 0.2s;
+    }
+
+    .img-explorer-load-more:hover { border-color: var(--gold); background: rgba(184,149,90,0.05); }
+    .img-explorer-load-more:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .img-section-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.8rem; color: var(--muted); font-style: italic;
+      margin: 1.5rem 0 0.5rem; letter-spacing: 0.04em;
+    }
+
+    .img-no-results {
+      text-align: center; padding: 4rem 1rem;
+      color: var(--muted); font-style: italic; font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -437,12 +556,13 @@
   <header>
     <p class="eyebrow">SmugMug User Highlight</p>
     <h1>Discover <em>Photographers</em></h1>
-    <p class="tagline">Search SmugMug users or explore the Top 100 most popular photographers</p>
+    <p class="tagline">Search photographers, explore images by keyword, or discover the top 100</p>
     <div class="ornament"><span>✦</span></div>
   </header>
 
   <nav class="section-nav">
     <button class="nav-tab active" data-section="search">🔍 Search Users</button>
+    <button class="nav-tab" data-section="images">🖼 Explore Images</button>
     <button class="nav-tab" data-section="highlights">✦ Top 100 Highlights</button>
   </nav>
 
@@ -456,6 +576,21 @@
       <div id="status"></div>
       <div id="results"></div>
       <div id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- Image Explorer -->
+  <div id="section-images" class="section">
+    <div id="section-images-inner">
+      <div class="img-explorer-header">
+        <div class="img-explorer-search">
+          <input id="img-search-input" type="text" placeholder="Search images by keyword… e.g. landscape, wedding, wildlife"/>
+          <button id="img-search-btn">Explore</button>
+        </div>
+        <p class="img-explorer-hint">Finds the top photographers matching your keyword, then pulls their best images</p>
+      </div>
+      <div id="img-status"></div>
+      <div id="img-grid" class="img-explorer-grid"></div>
     </div>
   </div>
 
@@ -525,9 +660,12 @@
     </div>
 
     <div class="admin-tabs">
-      <button class="admin-tab active" data-type="image"><span class="tab-icon">🖼</span>Images</button>
-      <button class="admin-tab" data-type="album"><span class="tab-icon">📸</span>Albums</button>
+      <button class="admin-tab active" data-type="album"><span class="tab-icon">📸</span>Albums</button>
+      <button class="admin-tab" data-type="image"><span class="tab-icon">🖼</span>Images</button>
       <button class="admin-tab" data-type="folder"><span class="tab-icon">📁</span>Folders</button>
+    </div>
+    <div id="admin-user-note" style="font-size:0.68rem;color:#4a6070;margin-bottom:1rem;padding:0.6rem 0.8rem;border:1px solid #1e2d3d;background:#0d1117;">
+      ℹ Search by <span style="color:#00d4ff;">username</span> (e.g. <em>photographybyerick</em>) to browse a specific user's content — or search any keyword to find matching albums/folders across SmugMug.
     </div>
 
     <div id="admin-status"></div>
@@ -632,6 +770,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
     document.getElementById(`section-${id}`).classList.add('visible');
     if (id === 'highlights' && !hlLoaded) loadHighlights();
+    if (id === 'images') { document.getElementById('img-search-input').focus(); }
   });
 });
 
@@ -829,7 +968,7 @@ async function runAdminSearch() {
   const paginEl   = document.getElementById('admin-pagination');
   const btn       = document.getElementById('admin-search-btn');
 
-  const endpoints = { image: '/api/v2/image!search', album: '/api/v2/album!search', folder: '/api/v2/folder!search' };
+  // Admin search is user-scoped — handled in runAdminSearch below
 
   statusEl.innerHTML = '<span class="admin-spinner"></span><span class="hl">Querying…</span>';
   resultsEl.innerHTML = ''; paginEl.innerHTML = ''; btn.disabled = true;
@@ -930,6 +1069,161 @@ function renderAdminPagination(pages, container) {
 
 function showAdminError(msg) {
   document.getElementById('admin-results').innerHTML = `<div class="admin-error">⚠ ${esc(msg)}</div>`;
+}
+
+
+// ─────────────────────────────────────────
+//  PUBLIC — Image Explorer
+//  Strategy: search users → fetch popular images from each → combined gallery
+// ─────────────────────────────────────────
+let imgQuery = '', imgUserPool = [], imgUserIndex = 0, imgAllImages = [];
+const IMG_USERS_PER_SEARCH = 10;  // how many users to find
+const IMG_IMAGES_PER_USER  = 8;   // images to pull per user
+const IMG_LOAD_MORE_USERS  = 5;   // extra users on "load more"
+
+document.getElementById('img-search-btn').addEventListener('click', startImgSearch);
+document.getElementById('img-search-input').addEventListener('keydown', e => { if (e.key === 'Enter') startImgSearch(); });
+
+function startImgSearch() {
+  const q = document.getElementById('img-search-input').value.trim();
+  if (!q) return;
+  imgQuery = q;
+  imgUserPool = [];
+  imgUserIndex = 0;
+  imgAllImages = [];
+  document.getElementById('img-grid').innerHTML = '';
+  runImgSearch(true);
+}
+
+async function runImgSearch(isFirst) {
+  const statusEl = document.getElementById('img-status');
+  const gridEl   = document.getElementById('img-grid');
+  const btn      = document.getElementById('img-search-btn');
+  const loadMoreBtn = document.getElementById('img-load-more');
+  if (loadMoreBtn) loadMoreBtn.disabled = true;
+  btn.disabled = true;
+
+  // Step 1 (first run only): find users matching the keyword
+  if (isFirst) {
+    statusEl.innerHTML = '<span class="spinner"></span>Finding photographers…';
+    try {
+      const users = await fetchUsersRaw('/api/v2/user!search', { q: imgQuery, count: IMG_USERS_PER_SEARCH });
+      if (!users.length) {
+        statusEl.textContent = '';
+        gridEl.innerHTML = `<div class="img-no-results">No photographers found for "${imgQuery}". Try a different keyword.</div>`;
+        btn.disabled = false;
+        return;
+      }
+      imgUserPool = users;
+      imgUserIndex = 0;
+    } catch(err) {
+      statusEl.textContent = `Error: ${err.message}`;
+      btn.disabled = false;
+      return;
+    }
+  }
+
+  // Step 2: grab the next batch of users from the pool
+  const batch = imgUserPool.slice(imgUserIndex, imgUserIndex + IMG_LOAD_MORE_USERS);
+  imgUserIndex += batch.length;
+
+  if (!batch.length) {
+    statusEl.textContent = 'No more photographers to load.';
+    btn.disabled = false;
+    return;
+  }
+
+  statusEl.innerHTML = `<span class="spinner"></span>Loading images from ${batch.length} photographer${batch.length !== 1 ? 's' : ''}…`;
+
+  // Step 3: fetch popular images from each user in parallel
+  const fetches = batch.map(async user => {
+    const nick = user.NickName;
+    if (!nick) return [];
+    try {
+      const p = new URLSearchParams({ endpoint: `/api/v2/user/${nick}!popularmedia`, count: IMG_IMAGES_PER_USER });
+      const resp = await fetch(`${PROXY_BASE}?${p}`, { headers: { Accept: 'application/json' } });
+      if (!resp.ok) return [];
+      const data = await resp.json();
+      const images = data.Response?.Image || [];
+      // Tag each image with its author info
+      return images.map(img => ({
+        ...img,
+        _authorName: user.DisplayName || nick,
+        _authorNick: nick,
+        _authorUri:  user.WebUri || `https://www.smugmug.com/${nick}`,
+      }));
+    } catch { return []; }
+  });
+
+  const results = await Promise.allSettled(fetches);
+  const newImages = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+
+  if (!newImages.length && isFirst) {
+    statusEl.textContent = `Found photographers but no public images for "${imgQuery}".`;
+    btn.disabled = false;
+    return;
+  }
+
+  // Step 4: render tiles, grouped by photographer
+  batch.forEach(user => {
+    const nick = user.NickName;
+    const userImages = newImages.filter(img => img._authorNick === nick);
+    if (!userImages.length) return;
+
+    // Section label per photographer
+    const label = document.createElement('div');
+    label.className = 'img-section-label';
+    label.style.gridColumn = '1 / -1';
+    const displayName = user.DisplayName || nick;
+    const webUri = user.WebUri || `https://www.smugmug.com/${nick}`;
+    label.innerHTML = `<a href="${esc(webUri)}" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">📷 ${esc(displayName)}</a>`;
+    gridEl.appendChild(label);
+
+    userImages.forEach((img, idx) => {
+      const thumb = img.ThumbnailUrl || img.ImageUrl || '';
+      if (!thumb) return;
+      const title = img.Title || img.FileName || '';
+      const tile = document.createElement('div');
+      tile.className = 'img-tile';
+      tile.style.animationDelay = `${idx * 40}ms`;
+      tile.innerHTML = `
+        <img src="${esc(thumb)}" alt="${esc(title)}" loading="lazy"/>
+        <div class="img-tile-overlay">
+          ${title ? `<div class="img-tile-title">${esc(title)}</div>` : ''}
+          <div class="img-tile-author">by ${esc(img._authorName)}</div>
+        </div>`;
+      if (img.WebUri) tile.addEventListener('click', () => window.open(img.WebUri, '_blank'));
+      gridEl.appendChild(tile);
+    });
+  });
+
+  imgAllImages.push(...newImages);
+  const remaining = imgUserPool.length - imgUserIndex;
+  statusEl.textContent = `${imgAllImages.length} images from ${imgUserIndex} photographers for "${imgQuery}"${remaining > 0 ? ` · ${remaining} more photographers available` : ''}`;
+
+  // Remove old load more button
+  const oldBtn = document.getElementById('img-load-more');
+  if (oldBtn) oldBtn.remove();
+
+  // Add load more if there are more users
+  if (remaining > 0) {
+    const moreBtn = document.createElement('button');
+    moreBtn.id = 'img-load-more';
+    moreBtn.className = 'img-explorer-load-more';
+    moreBtn.textContent = `Load more (${remaining} photographer${remaining !== 1 ? 's' : ''} remaining)`;
+    moreBtn.addEventListener('click', () => runImgSearch(false));
+    gridEl.after(moreBtn);
+  }
+
+  btn.disabled = false;
+}
+
+async function fetchUsersRaw(endpoint, params) {
+  const p = new URLSearchParams({ endpoint, ...params });
+  const resp = await fetch(`${PROXY_BASE}?${p}`, { headers: { Accept: 'application/json' } });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  return data.Response?.User || [];
 }
 
 // ─────────────────────────────────────────
